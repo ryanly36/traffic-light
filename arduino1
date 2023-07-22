@@ -1,0 +1,78 @@
+const int ledPin1 = 12; // red
+const int ledPin2 = 13; // green
+const int triggerPin = 7; // trigger pin
+const int echoPin = 8; // echo pin
+unsigned long previousMillis = 0; // variable to store previous time
+bool ledState = LOW; // current state of the LED
+int distance = 0; // variable to store the distance measurement
+
+enum State { RED, GREEN, SWITCHING }; // State enumeration
+State currentState = RED; // Initial state
+
+void setup() {
+  Serial.begin(9600);
+  pinMode(ledPin1, OUTPUT);
+  pinMode(ledPin2, OUTPUT);
+  digitalWrite(ledPin1, HIGH); // initial LED state
+  pinMode(triggerPin, OUTPUT); // trigger pin as output
+  pinMode(echoPin, INPUT); // echo pin as input
+}
+
+void loop() {
+  unsigned long currentMillis = millis(); // get the current time
+
+  switch (currentState) {
+    case RED:
+      handleRedState(currentMillis);
+      break;
+    case GREEN:
+      handleGreenState(currentMillis);
+      break;
+    case SWITCHING:
+      handleSwitchingState(currentMillis);
+      break;
+  }
+}
+
+void handleRedState(unsigned long currentMillis) {
+  digitalWrite(triggerPin, LOW);
+  delayMicroseconds(2);
+  digitalWrite(triggerPin, HIGH);
+  delayMicroseconds(10);
+  distance = pulseIn(echoPin, HIGH) / 58; // calculate distance from the echo pin
+
+  if (currentMillis - previousMillis >= 20000) {
+    currentState = SWITCHING;
+    previousMillis = currentMillis;
+  }
+}
+
+void handleGreenState(unsigned long currentMillis) {
+  digitalWrite(triggerPin, LOW);
+  delayMicroseconds(2);
+  digitalWrite(triggerPin, HIGH);
+  delayMicroseconds(10);
+  distance = pulseIn(echoPin, HIGH) / 58; // calculate distance from the echo pin
+
+  if (distance < 10) {
+    currentState = SWITCHING;
+    previousMillis = currentMillis;
+  }
+}
+
+void handleSwitchingState(unsigned long currentMillis) {
+  ledState = !ledState;
+  digitalWrite(ledPin1, ledState);
+  digitalWrite(ledPin2, !ledState);
+  Serial.write(ledState); // send the LED state to the other Arduino
+
+  currentState = ledState == HIGH ? RED : GREEN;
+
+  if (currentState == RED) {
+    Serial.write(HIGH); // send HIGH to indicate red light
+  } else {
+    Serial.write(LOW);  // send LOW to indicate green light
+  }
+
+  previousMillis = currentMillis; // Reset the timer for the next state
+}
