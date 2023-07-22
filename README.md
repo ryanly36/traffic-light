@@ -1,1 +1,3 @@
 # traffic-light
+
+This repository contains code for a two-arduino traffic signal system. In this project, Arduino 1 serves as the main traffic signal controller, responsible for controlling the Red and Green LEDs and detecting distance using an ultrasonic sensor (HC-SR04). Arduino 2 acts as a secondary controller and receives signals from Arduino 1, adjusting its own Red and Green LEDs accordingly. The communication between the two microcontrollers is established using the Serial communication protocol, enabling seamless synchronization of the traffic signals based on distance and elapsed time. The code utilizes state machines to ensure efficient and bug-free signal control, making it a practical and reliable solution for traffic signal simulation.
